@@ -55,6 +55,6 @@ asm = whisk_asm()
 asm.assemble(inp) 
     
         
-print(sm.datamem)
+print(asm.datamem)
 print(asm.progmem)
 print(asm.varis)
