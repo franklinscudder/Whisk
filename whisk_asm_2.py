@@ -52,7 +52,9 @@ class whisk_asm:
     
     def parseCode(self, inp):
         inp = inp.split("\n")
+        inp = [i.split("#")[0] for i in inp]
         inp = [i.lstrip().rstrip() for i in inp if i != "" and not i.isspace()]
+        
         return inp
     
     def parseValue(self, val):
@@ -65,7 +67,7 @@ class whisk_asm:
         elif val == "?":
             return "?"
         
-        elif val[0] == "~":
+        elif val[0] == ":":
             return self.labels[val]
             
         else:
@@ -84,31 +86,8 @@ class whisk_asm:
         for ln, line in enumerate(self.progmem):
             if "?" in line:
                 self.progmem[ln] = re.sub("\?", str((ln+1)*3), line)
-    
-    def assemble(self, code):
-        code = self.parseCode(code)
-        self.assign("$z", 0)
-        self.assign("$halt", -1)
-        
-        for line in code:
-            terms = line.split()
-            if terms[0] == "add":
-                self.progmem += self.add(*[self.parseValue(i) for i in terms[1:3]])
-            elif terms[0] == "inc":
-                self.progmem += self.inc(self.parseValue(terms[1]))
-            elif terms[0] == "dec":
-                self.progmem += self.dec(self.parseValue(terms[1]))
-            elif terms[0] == "jmp":
-                self.progmem += self.jmp(self.parseValue(terms[1]))
-            elif terms[0] == "cpy":
-                self.progmem += self.cpy(self.parseValue(terms[2]))
-                self.progmem += self.add(*[self.parseValue(i) for i in terms[1:3]])
-            elif terms[0][0] == ":":
-                self.labels[terms[0]] = len(self.progmem)*3
-            elif terms[0] == "print":
-                self.progmem += self.print_(self.parseValue(terms[1]))
                 
-        self.resolveQs()
+    def combineAndResolveData(self):
         for ln, line in enumerate(self.progmem):
             spl = line.split(" ")
             outline = ""
@@ -120,9 +99,41 @@ class whisk_asm:
             self.progmem[ln] = outline.lstrip()
         self.datamem = " ".join(self.datamem)
         self.progmem = "\n".join(self.progmem) + "\n"
-        assembled = self.progmem + self.datamem
+        return self.progmem + self.datamem
+    
+    def assemble(self, code):
+        code = self.parseCode(code)
+        self.assign("$z", 0)
+        self.assign("$halt", -1)
         
-        return assembled
+        for line in code:
+            terms = line.split()
+            if terms[0] == "add":
+                self.progmem += self.add(*[self.parseValue(i) for i in terms[1:3]])
+                
+            elif terms[0] == "inc":
+                self.progmem += self.inc(self.parseValue(terms[1]))
+                
+            elif terms[0] == "dec":
+                self.progmem += self.dec(self.parseValue(terms[1]))
+                
+            elif terms[0] == "jmp":
+                self.progmem += self.jmp(self.parseValue(terms[1]))
+                
+            elif terms[0] == "cpy":
+                self.progmem += self.cpy(self.parseValue(terms[2]))
+                self.progmem += self.add(*[self.parseValue(i) for i in terms[1:3]])
+                
+            elif terms[0][0] == ":":
+                self.labels[terms[0]] = len(self.progmem)*3
+                
+            elif terms[0] == "print":
+                self.progmem += self.print_(self.parseValue(terms[1]))
+                
+        self.resolveQs()
+        return self.combineAndResolveData()
+        
+        
                 
 
 
@@ -131,11 +142,13 @@ if __name__ == "__main__":
     print(asm.assemble("""
         add !2 1
         inc 4
-        dec $z
+        #comment #comment
+        dec $z  #comment
         jmp 0
+        :here
         cpy $z 23
         print $z
-        jmp $halt
+        jmp :here
         """))
     
 
