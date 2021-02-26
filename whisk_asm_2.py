@@ -145,12 +145,13 @@ class whisk_asm:
         return self.combineAndResolveData()
         
         
-def toBin(assembled, bits):
+def toBin(assembled):
     nums = assembled.split()
-    out = ""
+    out = []
     for num in nums:
-        out += twos_comp(int(num), bits)
-    print("Compiled size: ", int(len(out)/8), " bytes")
+        twosC = twos_comp(int(num), 16)
+        out += [twosC[:8], twosC[8:]]
+    print("Compiled size: ", int(len(out)), " bytes")
     return out
     
 def twos_comp(val, bits):
@@ -159,13 +160,13 @@ def twos_comp(val, bits):
     
     if val < 0:
         out += "1"
-        total -= 2 ** bits
+        total -= 2 ** (bits-1)
     else:
         out += "0"
     
     bit = bits - 1
     while bit > 0:
-        bitval = 2 ** bit
+        bitval = 2 ** (bit-1)
         
         if bitval + total <= val:
             out += "1"
@@ -175,6 +176,7 @@ def twos_comp(val, bits):
         
         bit -= 1
     
+    assert len(out) == bits
     return out
         
         
@@ -190,8 +192,11 @@ if __name__ == "__main__":
     f = open("output.slq", "w")
     f.write(assembled)
     f.close()
-    print(toBin(assembled, 16))
-    
+    binary = toBin(assembled)
+    asbytes = bytes([int(b, 2) for b in binary])
+    f = open("output.bin", "wb")
+    f.write(asbytes)
+    f.close()
 
 
 
