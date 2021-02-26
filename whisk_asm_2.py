@@ -145,9 +145,41 @@ class whisk_asm:
         return self.combineAndResolveData()
         
         
-                
-
-
+def toBin(assembled):
+    nums = assembled.split()
+    out = ""
+    for num in nums:
+        out += twos_comp(int(num), 16)
+    
+    return out
+    
+def twos_comp(val, bits):
+    out = ""
+    total = 0
+    
+    if val < 0:
+        out += "1"
+        total -= 2 ** bits
+    else:
+        out += "0"
+    
+    bit = bits - 1
+    while total != val:
+        bitval = 2 ** bit
+        
+        if bitval + total <= val:
+            out += "1"
+            total += bitval
+        else:
+            out += "0"
+        
+        bit -= 1
+    
+    return out
+        
+        
+    
+    
 if __name__ == "__main__":
     f = open("input.sla", "r")
     code = f.read()
@@ -158,6 +190,7 @@ if __name__ == "__main__":
     f = open("output.slq", "w")
     f.write(assembled)
     f.close()
+    print(toBin(assembled))
     
 
 
