@@ -40,7 +40,7 @@ class whisk_asm:
         return out
         
     def print_(self, a):
-        out = f"""{a} {self.parseValue("!-1")} {self.parseValue("?")}
+        out = f"""{a} -1 {self.parseValue("?")}
             """
         out = self.formatLines(out)
         return out
@@ -97,6 +97,7 @@ class whisk_asm:
                 outline += " " + term
                 
             self.progmem[ln] = outline.lstrip()
+            
         self.datamem = " ".join(self.datamem)
         self.progmem = "\n".join(self.progmem) + "\n"
         return self.progmem + self.datamem
@@ -106,7 +107,7 @@ class whisk_asm:
         self.assign("$z", 0)
         self.assign("$halt", -1)
         
-        for line in code:
+        for ln, line in enumerate(code):
             terms = line.split()
             if terms[0] == "add":
                 self.progmem += self.add(*[self.parseValue(i) for i in terms[1:3]])
@@ -129,6 +130,16 @@ class whisk_asm:
                 
             elif terms[0] == "print":
                 self.progmem += self.print_(self.parseValue(terms[1]))
+            
+            elif terms[0] == "s":
+                parsedTerms = [self.parseValue(i) for i in terms[1:]]
+                self.progmem += [f"{parsedTerms[0]} {parsedTerms[1]} {parsedTerms[2]}"]
+            
+            elif terms[1] == "=":
+                self.assign(terms[0], terms[2])
+            
+            else:
+                raise SyntaxError(f"Unrecognised Command in line {ln+1}! \n >>> {line}")
                 
         self.resolveQs()
         return self.combineAndResolveData()
@@ -138,18 +149,15 @@ class whisk_asm:
 
 
 if __name__ == "__main__":
+    f = open("input.sla", "r")
+    code = f.read()
+    f.close()
     asm = whisk_asm()
-    print(asm.assemble("""
-        add !2 1
-        inc 4
-        #comment #comment
-        dec $z  #comment
-        jmp 0
-        :here
-        cpy $z 23
-        print $z
-        jmp :here
-        """))
+    assembled = asm.assemble(code)
+    print(assembled)
+    f = open("output.slq", "w")
+    f.write(assembled)
+    f.close()
     
 
 

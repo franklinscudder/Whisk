@@ -1,0 +1,12 @@
+
+
+$char = 33                  # current char
+$minuschar = 0 				# negative of current char
+$limit = -126               # limit is 127
+:start                      # start marker
+s $minuschar $minuschar ?   # reset to zero
+print $char                 # print current char
+inc $char                   # increment char 
+s $char $minuschar ?        # make minuschar = -char
+s $limit $minuschar $halt   # if -255 + char <= 0 halt
+jmp :start                 # else loop

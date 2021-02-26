@@ -8,7 +8,7 @@ Feb. 2021
 
 
 class whisk:
-    def __init__(self, memory=1000):
+    def __init__(self, memory=30000):
         self.memory = [0]*memory
         
     def subleq(self,addr):
