@@ -28,8 +28,13 @@ addresses or variables, and ```a``` can be a literal.
 - ```print a``` prints the value at a to console.
 - ```$name = a``` assigns the value ```a``` to the variable with name ```$name```.
 
+Notes
+============
 A general rule here is that you can never have a literal as the second argument
 to a statement as this will change the stored value of that literal and is
 therefore not allowed.
+
+The symbol ```?``` can be used to specify a jump to the next command with an 
+```s``` statement meaning no conditional branching will occur.
 
 Happy Coding!
