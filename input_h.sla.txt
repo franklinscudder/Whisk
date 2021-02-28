@@ -1,0 +1,12 @@
+
+
+$hello = ['h','e','l','l','o']
+$i = 0
+$-i = 0
+:start
+print $hello
+inc :start
+s $-i $-i ?
+s $i $-i ?           #set -i
+s !-5 $-i $halt
+jmp :start

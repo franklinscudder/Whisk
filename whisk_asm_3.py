@@ -6,6 +6,7 @@ class whisk_asm:
         self.datamem = []
         self.varis = {}
         self.labels = {}
+        self.ptrs = []      ## Varis > ptrs > datamem
     
     def add(self, a, b):
         out = f"""{a} {self.parseValue("$z")} {self.parseValue("?")}
@@ -46,16 +47,14 @@ class whisk_asm:
         return out
     
     def assign(self, name, val):
-        self.varis[name] = float(len(self.datamem))
+        self.varis[name] = float(len(self.ptrs))
+        self.ptrs += [float(len(self.datamem))]
         self.datamem += [str(val)]
-        return float(self.varis[name])
         
     def assignArray(self, name, val):
         addr = self.assign(name, val[0])
         for v in val[1:]:
             self.datamem += [self.parseValue(str(v))]
-            
-        return addr
     
     def parseCode(self, inp):
         inp = inp.split("\n")
@@ -69,16 +68,17 @@ class whisk_asm:
             return self.parseLiteral(val)
             
         elif val[0] == "$":   
-            return self.varis[val]
+            return self.ptrs[int(self.varis[val])]
         
         elif val[0] == "*":
-            return self.varis.
+            print("pointer to ","$" + val[1:]) 
+            return self.varis["$" + val[1:]]
             
         elif val == "?":
             return "?"
         
         elif val[0] == ":":
-            return self.labels[val]
+            return self.ptrs[int(self.labels[val])]
             
         elif val[0] == "'":
             return ord(val[1:-1])
@@ -108,18 +108,21 @@ class whisk_asm:
                 
     def combineAndResolveData(self):
         for ln, line in enumerate(self.progmem):
-            spl = line.split(" ")
+            terms = line.split(" ")
             outline = ""
-            for term in spl:
+            for term in terms:
                 if re.search(r'(?<=\d)\.0+\b', term):
                     term = str(int(float(term))+len(self.progmem)*3)
-                outline += " " + term
-                
+                outline += " " + term 
             self.progmem[ln] = outline.lstrip()
+        
+        ptrs = ""   
+        for item in self.ptrs:
+            ptrs += str(int(item + (len(self.progmem)*3) + len(self.ptrs))) + " "
             
         self.datamem = " ".join(self.datamem)
         self.progmem = "\n".join(self.progmem) + "\n"
-        return self.progmem + self.datamem
+        return self.progmem + ptrs + "\n" + self.datamem
     
     def assemble(self, code):
         code = self.parseCode(code)
@@ -165,6 +168,9 @@ class whisk_asm:
                 raise SyntaxError(f"Unrecognised Command in line {ln+1}! \n >>> {line}")
                 
         self.resolveQs()
+        print(self.progmem)
+        print(self.ptrs)
+        print(self.datamem)
         return self.combineAndResolveData()
         
         

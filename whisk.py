@@ -20,7 +20,7 @@ class whisk:
         C = self.memory[addr+2]
         
         if B == -1:
-            print(chr(self.memory[A]), end="")
+            print(int(self.memory[A]), end=",")
             return addr+3
             
         else:
