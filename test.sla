@@ -1,0 +1,18 @@
+$abcd = 4       #abcd stores address 4
+$abcd = !4      #abcd stores the address of const 4 
+
+$abcd <- !4     #abcd tracks dynamic addresses with initial value 4
+                    
+:name           #begin subroutine declaration
+
+s !4 2 ?        #subleq, b <- $b - $a, jump to c if $b <= 0.
+
+:endsub         #end subroutine declaration
+
+~label          #label this point in code flow
+
+goto ~label      #jump to label ( 0 0 label_addr ) 
+ 
+call :name       #call a subroutine
+
+print $abcd     #print value $abcd ($abcd -1 ?)
